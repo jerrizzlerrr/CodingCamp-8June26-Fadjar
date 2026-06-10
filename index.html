@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expense &amp; Budget Visualizer</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <h1>Expense &amp; Budget Visualizer</h1>
+  </header>
+
+  <main class="app-grid">
+
+    <!-- Left column: Form + Chart -->
+    <section class="panel panel--form" aria-label="Add transaction">
+      <h2>Add Transaction</h2>
+      <form id="transaction-form" novalidate>
+        <div class="field-group">
+          <label for="item-name">Item Name</label>
+          <input id="item-name" type="text" maxlength="100" autocomplete="off" required />
+          <span class="field-error" id="error-item-name" role="alert" aria-live="polite"></span>
+        </div>
+        <div class="field-group">
+          <label for="amount">Amount</label>
+          <input id="amount" type="number" min="0.01" max="999999999.99" step="0.01" required />
+          <span class="field-error" id="error-amount" role="alert" aria-live="polite"></span>
+        </div>
+        <div class="field-group">
+          <label for="category">Category</label>
+          <select id="category"></select> </div>
+        <button type="submit" class="btn btn--primary">Add Transaction</button>
+      </form>
+
+      <hr class="form-divider" />
+
+      <div class="custom-category-section">
+        <h3>Add Custom Category</h3>
+        <div class="field-group-row">
+          <div class="field-group" style="margin-bottom: 0; flex-grow: 1;">
+            <label for="new-category-name" class="visually-hidden">Category Name</label>
+            <input id="new-category-name" type="text" maxlength="20" placeholder="e.g., Bills, Shopping" autocomplete="off" />
+          </div>
+          <button type="button" id="btn-add-category" class="btn btn--secondary">Add</button>
+        </div>
+        <span class="field-error" id="error-custom-category" role="alert" aria-live="polite"></span>
+      </div>
+    </section>
+
+    <section class="panel panel--chart" aria-label="Spending by category">
+      <h2>Spending by Category</h2>
+      <div class="chart-wrapper">
+        <canvas id="spending-chart" width="300" height="300" role="img" aria-label="Pie chart of spending by category"></canvas>
+        <p class="chart-empty" id="chart-empty" aria-live="polite">No transactions yet — add one to see your chart.</p>
+      </div>
+    </section>
+
+    <section class="panel panel--summary" aria-label="Monthly budget summary">
+      <h2>Monthly Summary</h2>
+      <div class="summary-wrapper">
+        <table class="summary-table" id="summary-table">
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>Total Spent</th>
+            </tr>
+          </thead>
+          <tbody id="summary-table-body">
+            </tbody>
+        </table>
+        <p class="summary-empty" id="summary-empty" aria-live="polite">No monthly data available.</p>
+      </div>
+    </section>
+
+    <!-- Right column: Balance + List -->
+    <section class="panel panel--balance" aria-label="Total balance">
+      <div class="balance-banner">
+        <span class="balance-label">Total Spent</span>
+        <span class="balance-amount" id="balance-display">$0.00</span>
+      </div>
+    </section>
+
+    <section class="panel panel--list" aria-label="Transaction history">
+  <div class="panel-header-actions">
+    <h2>Transactions</h2>
+    
+    <div class="sort-wrapper">
+      <label for="sort-select" class="visually-hidden">Sort by:</label>
+      <select id="sort-select" aria-label="Sort transactions">
+        <option value="date-desc">Date: Newest First</option>
+        <option value="date-asc">Date: Oldest First</option>
+        <option value="amount-desc">Amount: Highest First</option>
+        <option value="amount-asc">Amount: Lowest First</option>
+        <option value="category-asc">Category: A-Z</option>
+      </select>
+    </div>
+  </div>
+
+  <ul class="transaction-list" id="transaction-list" role="list"></ul>
+  <p class="list-empty" id="list-empty" aria-live="polite">No transactions recorded yet.</p>
+</section>
+
+  </main>
+
+  <!-- Non-blocking notification toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
