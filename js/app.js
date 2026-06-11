@@ -20,7 +20,8 @@ const CATEGORY_COLORS = {
 ═══════════════════════════════ */
 const state = {
   transactions: [], // ordered oldest → newest
-  categories: []    // ELEMEN BARU: Menyimpan daftar kategori aktif (bawaan + kustom)
+  categories: [],    // ELEMEN BARU: Menyimpan daftar kategori aktif (bawaan + kustom)
+  transactionIdToDelete: null // 🟩 ELEMEN BARU: Mencatat ID transaksi yang sedang antre dihapus di modal
 };
 
 /* ═══════════════════════════════
@@ -712,39 +713,25 @@ function handleCreateCategory() {
 }
 
 /**
- * Menangani delegasi klik di dalam area daftar transaksi (misalnya untuk aksi hapus).
+ * Menangani klik tombol hapus untuk memunculkan modal konfirmasi kustom.
  * @param {Event} e
  */
 function handleListClick(e) {
-  // 1. Deteksi klik: cari elemen terdekat yang memiliki kelas btn--delete ATAU tombol itu sendiri
-  const deleteBtn = e.target.closest('.btn--delete') || e.target.classList.contains('btn--delete') ? e.target.closest('.btn--delete') : null;
-  
-  // Taktik cadangan jika closest bawaan browser sedang macet: periksa via properti tagName
-  const backupBtn = e.target.tagName === 'BUTTON' && e.target.classList.contains('btn--delete') ? e.target : e.target.parentElement;
+  // 1. Pastikan yang diklik adalah tombol silang (btn--delete)
+  const deleteBtn = e.target.closest('.btn--delete');
+  if (!deleteBtn) return;
 
-  const finalBtn = deleteBtn || (backupBtn && backupBtn.classList.contains('btn--delete') ? backupBtn : null);
-
-  if (!finalBtn) return;
-
-  // 2. Ambil ID unik transaksi dari tombol yang valid
-  const txnId = finalBtn.getAttribute('data-id') || finalBtn.parentElement.getAttribute('data-id');
+  // 2. Ambil ID unik transaksi secara akurat dari tombol atau dari baris elemennya
+  const txnId = deleteBtn.getAttribute('data-id') || deleteBtn.closest('.txn-item').getAttribute('data-id');
   if (!txnId) return;
 
-  // 3. Tambahkan konfirmasi pop-up agar tidak sengaja terhapus
-  const yakinHapus = confirm("Are you sure you want to delete this transaction?");
-  if (!yakinHapus) {
-    return; // Batalkan jika menekan Cancel
-  }
+  // 3. Simpan ID transaksi ke dalam antrean state kita
+  state.transactionIdToDelete = txnId;
 
-  // 4. Jalankan fungsi hapus transaksi
-  const success = deleteTransaction(txnId);
-
-  // 5. Jika berhasil dihapus, render ulang UI dan munculkan notifikasi info
-  if (success) {
-    render(state.transactions);
-    showToast('Transaction deleted successfully', 'info');
-  } else {
-    showToast('Failed to delete transaction', 'error');
+  // 4. Munculkan modal konfirmasi kustom dengan menghapus kelas 'hidden'
+  const modal = document.getElementById('confirm-modal');
+  if (modal) {
+    modal.classList.remove('hidden');
   }
 }
 
@@ -851,6 +838,38 @@ function init() {
 
   // 9. Jalankan pemantau ketikan untuk membersihkan pesan kesalahan secara instan
   setupInputListeners();
+
+  // 10. ELEMEN BARU: Logika Tombol "Cancel" di dalam Modal Kustom
+  const btnModalCancel = document.getElementById('btn-modal-cancel');
+  const confirmModal = document.getElementById('confirm-modal');
+  if (btnModalCancel && confirmModal) {
+    btnModalCancel.addEventListener('click', () => {
+      confirmModal.classList.add('hidden'); // Sembunyikan kembali modalnya
+      state.transactionIdToDelete = null;   // Kosongkan antrean hapus
+    });
+  }
+
+  // 11. ELEMEN BARU: Logika Tombol "Delete" di dalam Modal Kustom
+  const btnModalConfirm = document.getElementById('btn-modal-confirm');
+  if (btnModalConfirm && confirmModal) {
+    btnModalConfirm.addEventListener('click', () => {
+      // Jika ada ID transaksi yang valid di dalam antrean, eksekusi penghapusan
+      if (state.transactionIdToDelete) {
+        const success = deleteTransaction(state.transactionIdToDelete);
+        
+        if (success) {
+          render(state.transactions);
+          showToast('Transaction deleted successfully', 'info');
+        } else {
+          showToast('Failed to delete transaction', 'error');
+        }
+      }
+      
+      // Setelah selesai, tutup modal dan bersihkan antrean
+      confirmModal.classList.add('hidden');
+      state.transactionIdToDelete = null;
+    });
+  }
 }
 
 // Menunggu dokumen HTML siap sebelum mengeksekusi fungsi init
