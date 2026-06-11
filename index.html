@@ -103,6 +103,17 @@
 
   </main>
 
+  <div class="modal-overlay hidden" id="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-box">
+      <h3 id="modal-title">Delete Transaction?</h3>
+      <p>Are you sure you want to delete this transaction? This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button type="button" id="btn-modal-cancel" class="btn btn--modal-cancel">Cancel</button>
+        <button type="button" id="btn-modal-confirm" class="btn btn--modal-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Non-blocking notification toast -->
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
